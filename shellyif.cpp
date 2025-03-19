@@ -34,20 +34,27 @@ void ShellyIf::fetch_legacy(const std::string &host)
 	try
 	{
 		curlpp::Cleanup myCleanup;
+		curlpp::Easy handle1, handle2;
 		std::stringstream ss;
 		std::string config_data;
 		std::string status_data;
 		boost::json::parser json;
 		boost::json::object object;
 
+		handle1.setOpt(curlpp::options::Url((boost::format("http://%s/settings") % host).str()));
+		handle2.setOpt(curlpp::options::Url((boost::format("http://%s/status") % host).str()));
+
+		handle1.setOpt(curlpp::options::Timeout(5));
+		handle2.setOpt(curlpp::options::Timeout(5));
+
 		ss.clear();
 		ss.str("");
-		ss << curlpp::options::Url((boost::format("http://%s/settings") % host).str());
+		ss << handle1;
 		config_data = ss.str();
 
 		ss.clear();
 		ss.str("");
-		ss << curlpp::options::Url((boost::format("http://%s/status") % host).str());
+		ss << handle2;
 		status_data = ss.str();
 
 		json.write(config_data);
@@ -93,6 +100,7 @@ void ShellyIf::fetch_modern(const std::string &host)
 	try
 	{
 		curlpp::Cleanup myCleanup;
+		curlpp::Easy handle1, handle2;
 		std::stringstream ss;
 		std::string config_data;
 		std::string status_data;
@@ -100,14 +108,20 @@ void ShellyIf::fetch_modern(const std::string &host)
 		boost::json::parser json;
 		boost::json::object object, device;
 
+		handle1.setOpt(curlpp::options::Url((boost::format("http://%s/rpc/Shelly.GetConfig") % host).str()));
+		handle2.setOpt(curlpp::options::Url((boost::format("http://%s/rpc/Shelly.GetStatus") % host).str()));
+
+		handle1.setOpt(curlpp::options::Timeout(5));
+		handle2.setOpt(curlpp::options::Timeout(5));
+
 		ss.clear();
 		ss.str("");
-		ss << curlpp::options::Url((boost::format("http://%s/rpc/Shelly.GetConfig") % host).str());
+		ss << handle1;
 		config_data = ss.str();
 
 		ss.clear();
 		ss.str("");
-		ss << curlpp::options::Url((boost::format("http://%s/rpc/Shelly.GetStatus") % host).str());
+		ss << handle2;
 		status_data = ss.str();
 
 		json.write(config_data);
@@ -238,7 +252,7 @@ void ShellyIf::fetch_all(const std::vector<std::string> &argv)
 	}
 	catch(const InternalException &e)
 	{
-		throw(Exception(boost::format("error: %s") % e.what()));
+		throw(Exception(boost::format("internal error: %s") % e.what()));
 	}
 	catch(const std::exception &e)
 	{
